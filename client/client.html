@@ -7,17 +7,28 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
     const parseJSON = (xhr, content) => {
-        if(xhr.response && xhr.getResponseHeader('Content-Type') === 'application/json'){
-            const obj = JSON.parse(xhr.response);
-            console.dir(obj);
-            if(obj.message){
-                content.innerHTML += `<p>${obj.message}</p>`;
-            }
+        const obj = JSON.parse(xhr.response);
+        console.log(obj);
+        
+        //if there's a message present
+        if(obj.message){
+            const p = document.createElement('p');
+            p.textContent = `Message: ${obj.message}`;
+            content.appendChild(p);
+        }
+        
+        //if the response is users
+        if(obj.users){
+            const userList = document.createElement('p');
+            const users = JSON.stringify(obj.users);
+            userList.textContent = users;
+            content.appendChild(userList);
         }
     };
 
     const handleResponse = (xhr, parsedResponse) => {
         const content = document.querySelector('#content');
+        
         switch(xhr.status){
             case 200:
                 content.innerHTML = "<b>Success</b>";
@@ -40,11 +51,11 @@
         }
         
         if(parsedResponse){
-            parseJSON(xhr, content);
+            parseJSON(xhr,content);
         }
     };
 
-    const requestUpdate = (e, userForm) => {
+    const sendGetAndHead = (e, userForm) => {
       const url = userForm.querySelector('#urlField').value;
       const method = userForm.querySelector('#methodSelect').value;
       
@@ -61,6 +72,7 @@
         
         xhr.send();
         
+        //Prevent bubbling
         e.preventDefault();
         return false;
     };
@@ -93,9 +105,9 @@
         const userForm = document.querySelector('#userForm');
 
         const addUser = (e) => sendPost(e, nameForm);
+        const getUsers = (e) => sendGetAndHead(e, userForm);
+        
         nameForm.addEventListener('submit', addUser);
-
-        const getUsers = (e) => requestUpdate(e, userForm);
         userForm.addEventListener('submit', getUsers);
     };
 
